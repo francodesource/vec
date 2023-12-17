@@ -18,6 +18,16 @@ func NewVec[T any](vals []T, start int) Vec[T] {
 	return Vec[T]{sl, start}
 }
 
+// Start returns the starting index of vec.
+func (v Vec[T]) Start() int {
+	return v.start
+}
+
+// Returns the last index.
+func (v Vec[T]) End() int {
+	return v.start + v.Len() - 1
+}
+
 // String returns a string format of Vec.
 func (v Vec[T]) String() string {
 	return fmt.Sprint(v.sl)
