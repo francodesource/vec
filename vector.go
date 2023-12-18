@@ -11,8 +11,17 @@ type Vec[T any] struct {
 	start int
 }
 
-// newVec returns a pointer to a new instance of Vec.
-func NewVec[T any](vals []T, start int) Vec[T] {
+// NewVec returns a pointer to a new instance of Vec indexed from start.
+// Vec contains every value passed as input.
+func NewVec[T any](start int, vals ...T) (v Vec[T]) {
+	v.sl = vals
+	v.start = start
+	return v
+}
+
+// NewVecFromSlice returns a pointer to a new instance of Vec indexed from start.
+// Vec contains every element of the slice.
+func NewVecFromSlice[T any](start int, vals []T) Vec[T] {
 	sl := make([]T, len(vals))
 	copy(sl, vals)
 	return Vec[T]{sl, start}
@@ -23,9 +32,9 @@ func (v Vec[T]) Start() int {
 	return v.start
 }
 
-// Returns the last index.
+// Returns the upper bound.
 func (v Vec[T]) End() int {
-	return v.start + v.Len() - 1
+	return v.start + v.Len()
 }
 
 // String returns a string format of Vec.
@@ -52,6 +61,11 @@ func (v Vec[T]) Set(i int, newVal T) {
 	v.sl[v.index(i)] = newVal
 }
 
+// Swap swaps the element of index i and the element of index j.
+func (v Vec[T]) Swap(i, j int) {
+	v.sl[i], v.sl[j] = v.sl[j], v.sl[i]
+}
+
 // Add adds a value at index i.
 func (v *Vec[T]) Add(i int, newVal T) {
 	if i != v.Len() {
@@ -76,6 +90,37 @@ func (v Vec[T]) Slice() (res []T) {
 // Sort sorts the vect. The sort is guranteed to be stable.
 func (v Vec[T]) Sort(less func(i, j int) bool) {
 	sort.SliceStable(v.sl, less)
+}
+
+// Iter iterates through the vector and set every value to the result of f.
+//
+// Example:
+//
+// v.Iter(func(t int) int { return t + 1 })
+//
+// This code increments every value of the vector by one.
+func (v Vec[T]) Iter(f func(t T) T) {
+	for i := v.Start(); i < v.End(); i++ {
+		v.Set(i, f(v.At(i)))
+	}
+}
+
+// Filter iterates through the vector and returns a vector of each element that satisfies criteria function.
+//
+// Example:
+//
+// v = v.Filter(func(t int){ return i % 2 == 0})
+//
+// This code returns a vec of all even numbers.
+func (v Vec[T]) Filter(criteria func(t T) bool) Vec[T] {
+	w := NewVec[T](v.start)
+	for i := v.Start(); i < v.End(); i++ {
+		if criteria(v.At(i)) {
+			w.Add(w.End(), v.At(i))
+		}
+	}
+
+	return w
 }
 
 // validIndex checks if a given index is contained within vec 's bounds. If not it panics.
